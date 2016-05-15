@@ -8,6 +8,12 @@
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML"></script>
   </head>
   <body>
     <section class="page-header">
@@ -26,29 +32,44 @@
 <p>
 Vamos a plantearnos como ejercicio analizar los sondeos electorales. Para ello cogemos como datos los sondeos recopilados en la página web de la Wikipedia para las elecciones de 2015 y para las de 2016. Consideramos sólo los partidos PP, PSOE, IU, Podemos y Ciudadanos. El resto de partidos se consideran metidos dentro de un mismo saco, que vienen siendo alrededor del 15% en cada sondeo.</p>
 
-<p>Para modelar la evolución temporal de los sondeos para cada partido, usamos un modelado con variables latentes. La idea es que los resultados de los sondeos son sólo una estimación ruidosa y sesgada de la intención de voto real de los votantes. Por tanto, considamos que θi(tj) es la subyacente intención de voto para el partido i en el tiempo tj. Esta variable se observa de forma ruidosa para cada empresa k que realiza el sondeo, y además incluye un cierto sesgo. Por tanto, nuestro modelo de observación es:</p>
+<p>Para modelar la evolución temporal de los sondeos para cada partido, usamos un modelado con variables latentes. La idea es que los resultados de los sondeos son sólo una estimación ruidosa y sesgada de la intención de voto real de los votantes. Por tanto, considamos que θi(tj) es la subyacente intención de voto para el partido i en el tiempo $t_j$. Esta variable se observa de forma ruidosa para cada empresa k que realiza el sondeo, y además incluye un cierto sesgo. Por tanto, nuestro modelo de observación es:</p>
 
-yik(tj)∼N(θi(tj)+bik,σk(tj)2)
+$$
+y_{ik}(t_j) \sim N(\theta_i(t_j)+b_{ik},\sigma_k(t_j)^2)
+$$
+<p>donde $b_{ik}$ es el bias que introduce la empresa de sondeos k sobre el partido i y $\sigma_k(t_j)^2$ es la varianza del sondeo realizado en el tiempo $t_j$ por la empresa k. Para los resultados de las elecciones, elegimos una varianza muy pequeña y no incluimos los sesgos, porque es el único momento en el que tenemos acceso directo a las intenciones subyacentes:</p>
 
-<p>donde bik es el bias que introduce la empresa de sondeos k sobre el partido i y σ2ik es la varianza del sondeo realizado en el tiempo tj por la empresa k. Para los resultados de las elecciones, elegimos una varianza muy pequeña y no incluimos los sesgos, porque es el único momento en el que tenemos acceso directo a las intenciones subyacentes:</p>
-
-yik(elecciones)∼N(θi(tj),σk(elecciones)2).
+$$
+y_{ik}(elecciones) \sim N(\theta_i(t_j),\sigma_k(t_j)^2).
+$$
 
 <p>Es obvio que la suma de porcentajes de cada partido debe sumar 1 en cada sondeo, por lo cual debemos asegurarnos de que</p>
-∑iθi(tj)=1.
+
+$$
+\sum_i \theta_i(t_j)=1.
+$$
 
 <p>Además, es lógico asumir que, dadas suficientes casas de sondeo, los biases sumen 0 para cada partido:
-∑kbik=0.
+$$
+\sum_k b_{ik}=0.
+$$
 Por último, asumimos un proceso autoregresivo Markoviano para modelar la variación temporal de la intención de voto real para cada partido. Es decir, en cada sondeo, la intención de voto estará dada por una variable Gaussiana con media igual a la intención de voto anterior, y una varianza que debemos estimar para cada partido:</p>
 
-θi(tj)∼N(θi(tj−1),σ2i)
+$$
+\theta_i(t_j) \sim N(\theta_i(t_{j−1}),\sigma_i^2)
+$$
 
-<p>Como es un parámetro de escala, definimos un prior poco informativo sobre σi:</p>
+<p>Como es un parámetro de escala, definimos un prior poco informativo sobre $\sigma_i$:</p>
 
-σi∼IG(0.01,0.01).
-<p>Por último, debemos definir un prior para θi(t0), para el cual escogemos una distribución de Dirichlet con α=1:</p>
+$$
+\sigma_i \sim IG(0.01,0.01).
+$$
 
-θi(t0)∼Dir(α).
+<p>Por último, debemos definir un prior para $θ_i(t_0)$, para el cual escogemos una distribución de Dirichlet con $\alpha=1$:</p>
+
+$$
+\theta_i(t_0) \sim Dir(\alpha).
+$$
 
 <h3>
 <a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sondeos y variación subyacente</h3>
