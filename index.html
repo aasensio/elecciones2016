@@ -52,9 +52,12 @@ Resultados al 95% de confianza.
 <h3>
 <a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Análisis de los sondeos electorales 2016</h3>
 <p>
-Vamos a plantearnos como ejercicio analizar los sondeos electorales. Para ello cogemos como datos los sondeos recopilados en la página web de la Wikipedia para las elecciones de 2015 y para las de 2016. Consideramos sólo los partidos PP, PSOE, IU, Podemos y Ciudadanos. El resto de partidos se consideran metidos dentro de un mismo saco, que vienen siendo alrededor del 15% en cada sondeo.</p>
+Vamos a plantearnos como ejercicio analizar los sondeos electorales. Para ello cogemos como datos los sondeos recopilados en la página web de la <a href="https://es.wikipedia.org/wiki/Anexo:Sondeos_de_intenci%C3%B3n_de_voto_para_las_elecciones_generales_de_Espa%C3%B1a_de_2015">Wikipedia</a> para las elecciones de 2015 y los sondeos publicados en <a href="http://www.electograph.com/">Electograph</a>. Tengo
+que agradecer a <a href="https://twitter.com/ChusCarro">@ChusCarro</a> y a <a href="https://twitter.com/kikollan">@kikollan</a> por su
+ayuda. Consideramos sólo los partidos PP, PSOE, Unidos Podemos y Ciudadanos. El resto de partidos se consideran metidos dentro de un mismo saco, que vienen siendo alrededor del 10-15% en cada sondeo.</p>
 
-<p>Para modelar la evolución temporal de los sondeos para cada partido, usamos un modelado con variables latentes. La idea es que los resultados de los sondeos son sólo una estimación ruidosa y sesgada de la intención de voto real de los votantes. Por tanto, considamos que θi(tj) es la subyacente intención de voto para el partido i en el tiempo $t_j$. Esta variable se observa de forma ruidosa para cada empresa k que realiza el sondeo, y además incluye un cierto sesgo. Por tanto, nuestro modelo de observación es:</p>
+<p>Para modelar la evolución temporal de los sondeos para cada partido, usamos un modelado con variables latentes. La idea es que los resultados de los sondeos son sólo una estimación ruidosa y sesgada de la intención de voto real de los votantes. Por tanto, considamos que 
+$\theta_i(t_j)$ es la subyacente intención de voto para el partido i en el tiempo $t_j$. Esta variable se observa de forma ruidosa para cada empresa k que realiza el sondeo, y además incluye un cierto sesgo. Por tanto, nuestro modelo de observación es:</p>
 
 $$
 y_{ik}(t_j) \sim N(\theta_i(t_j)+b_{ik},\sigma_k(t_j)^2)
@@ -75,7 +78,8 @@ $$
 $$
 \sum_k b_{ik}=0.
 $$
-Por último, asumimos un proceso autoregresivo Markoviano para modelar la variación temporal de la intención de voto real para cada partido. Es decir, en cada sondeo, la intención de voto estará dada por una variable Gaussiana con media igual a la intención de voto anterior, y una varianza que debemos estimar para cada partido:</p>
+Por último, asumimos un proceso autoregresivo Markoviano para modelar la variación temporal de la intención de voto real para cada partido. Es decir, en cada sondeo, la intención de voto estará dada por una variable Gaussiana con media igual a la intención de voto anterior, y una varianza que debemos estimar para cada partido. Considero una varianza distinta antes que después
+de las elecciones:</p>
 
 $$
 \theta_i(t_j) \sim N(\theta_i(t_{j−1}),\sigma_i^2)
@@ -113,7 +117,9 @@ $$
 <h3>
 <a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Variabilidad</h3>
 <p>
-Por último, aquí muestro la variabilidad intrínseca de la estimación subyacente de voto para cada partido. Es lógico que Podemos y Cs tengan una variabilidad mayor por su largo crecimiento en el último año.</p>
+Por último, aquí muestro la variabilidad intrínseca de la estimación subyacente de voto para cada partido, tanto
+antes como después de las elecciones. Es lógico que UP y Cs tengan una variabilidad mayor por su largo crecimiento en el último año,
+aunque se estabiliza después de las elecciones.</p>
 <img src="variabilidad.png">
 
       <footer class="site-footer">
