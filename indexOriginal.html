@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Elecciones 2016 by aasensio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML"></script>
+
+<link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-0.11.1.min.css"
+    rel="stylesheet" type="text/css">
+<script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-0.11.1.min.js"></script>
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Elecciones 2016 by aasensio</h1>
+      <h2 class="project-tagline">Estudio de sondeos de las elecciones 2016</h2>
+      <a href="https://github.com/aasensio/elecciones2015" class="btn">View on GitHub</a>
+    </section>
+
+    <section class="main-content">
+      <h3>
+
+<a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Resultado 20/5/2016</h3>
+
+<table>
+<tbody>
+<td style='height: 50px; background: #02B3F4; color: white; font-size: 25px; border-radius: 1px 10px 0px 0px;'>27.9-28.9-30.0</td>
+<td style='height: 50px; background: #8E1744; color: white; font-size: 25px; border-radius: 1px 10px 0px 0px;'>23.1-24.3-25.2</td>
+<td style='height: 50px; background: #FF0202; color: white; font-size: 25px; border-radius: 1px 10px 0px 0px;'>20.1-21.4-22.4</td>
+<td style='height: 50px; background: #FF800E; color: white; font-size: 25px; border-radius: 1px 10px 0px 0px;'>14.3-15.4-16.7</td>
+</tr>
+<tr>
+<td style='width: 25%'><img src='pp.png' width='100%'/></td>
+<td style='width: 25%'><img src='podemosiu.png' width='100%'/></td>
+<td style='width: 25%'><img src='psoe.png' width='100%'/></td>
+<td style='width: 25%'><img src='cs.png' width='100%'/></td>
+</tr>
+<!-- <tr>
+<td colspan='5' style='text-align: right; font-family: Roboto Condensed; font-size: 20px; font-weight: 200;'>15/05/16</td>
+</tr>
+ -->
+</tbody>
+</table>
+Resultados al 95% de confianza.
+<h3>
+<a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Análisis de los sondeos electorales 2016</h3>
+<p>
+Vamos a plantearnos como ejercicio analizar los sondeos electorales. Para ello cogemos como datos los sondeos recopilados en la página web de la <a href="https://es.wikipedia.org/wiki/Anexo:Sondeos_de_intenci%C3%B3n_de_voto_para_las_elecciones_generales_de_Espa%C3%B1a_de_2015">Wikipedia</a> para las elecciones de 2015 y los sondeos publicados en <a href="http://www.electograph.com/">Electograph</a>. Tengo
+que agradecer a <a href="https://twitter.com/ChusCarro">@ChusCarro</a> y a <a href="https://twitter.com/kikollan">@kikollan</a> por su
+ayuda. Consideramos sólo los partidos PP, PSOE, Unidos Podemos y Ciudadanos. El resto de partidos se consideran metidos dentro de un mismo saco, que vienen siendo alrededor del 10-15% en cada sondeo.</p>
+
+<p>Para modelar la evolución temporal de los sondeos para cada partido, usamos un modelado con variables latentes. La idea es que los resultados de los sondeos son sólo una estimación ruidosa y sesgada de la intención de voto real de los votantes. Por tanto, considamos que 
+$\theta_i(t_j)$ es la subyacente intención de voto para el partido i en el tiempo $t_j$. Esta variable se observa de forma ruidosa para cada empresa k que realiza el sondeo, y además incluye un cierto sesgo. Por tanto, nuestro modelo de observación es:</p>
+
+$$
+y_{ik}(t_j) \sim N(\theta_i(t_j)+b_{ik},\sigma_k(t_j)^2)
+$$
+<p>donde $b_{ik}$ es el bias que introduce la empresa de sondeos k sobre el partido i y $\sigma_k(t_j)^2$ es la varianza del sondeo realizado en el tiempo $t_j$ por la empresa k. Para los resultados de las elecciones, elegimos una varianza muy pequeña y no incluimos los sesgos, porque es el único momento en el que tenemos acceso directo a las intenciones subyacentes:</p>
+
+$$
+y_{ik}(elecciones) \sim N(\theta_i(t_j),\sigma_k(t_j)^2).
+$$
+
+<p>Es obvio que la suma de porcentajes de cada partido debe sumar 1 en cada sondeo, por lo cual debemos asegurarnos de que</p>
+
+$$
+\sum_i \theta_i(t_j)=1.
+$$
+
+<p>Además, es lógico asumir que, dadas suficientes casas de sondeo, los biases sumen 0 para cada partido:
+$$
+\sum_k b_{ik}=0.
+$$
+Por último, asumimos un proceso autoregresivo Markoviano para modelar la variación temporal de la intención de voto real para cada partido. Es decir, en cada sondeo, la intención de voto estará dada por una variable Gaussiana con media igual a la intención de voto anterior, y una varianza que debemos estimar para cada partido. Considero una varianza distinta antes que después
+de las elecciones:</p>
+
+$$
+\theta_i(t_j) \sim N(\theta_i(t_{j−1}),\sigma_i^2)
+$$
+
+<p>Como es un parámetro de escala, definimos un prior poco informativo sobre $\sigma_i$:</p>
+
+$$
+\sigma_i \sim IG(0.01,0.01).
+$$
+
+<p>Por último, debemos definir un prior para $θ_i(t_0)$, para el cual escogemos una distribución de Dirichlet con $\alpha=1$:</p>
+
+$$
+\theta_i(t_0) \sim Dir(\alpha).
+$$
+
+<h3>
+<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sondeos y variación subyacente</h3>
+<p>En esta representación vemos la variación de las estimaciones de voto en puntos para cada una de las encuestas que hemos considerado y la estimación subyacente que hemos inferido. Como se ve, la varianza de la estimación subyacente cambia con el tiempo, siendo muy pequeña en la fecha de las elecciones, marcada con una línea vertical.</p>
+
+
+<p>A continuación represento la evolución temporal del voto por cada partido político, incluyendo las incertidumbres estimadas para cada sondeo.</p>
+
+<img src="porPartido.png">
+<h3>
+<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Estimación actual de voto</h3>
+<p>A continuación pongo la estimación de voto actual y sus intervalos de confianza.</p>
+<img src="estimacionActual.png">
+<h3>
+<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sesgos</h3>
+<p>Represento a continuación las estimaciones de sesgo para cada una de las empresas encuestadoras, lo que muestra algún efecto curioso en Demoscopia Servicios que sería interesante analizar y entender por qué pasa. Nótese que un sesgo positivo implica que esa empresa subestima los votos y hace falta corregirlo por esa cantidad para obtener las observaciones.</p>
+<img src="bias.png">
+
+<h3>
+<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Variabilidad</h3>
+<p>
+Por último, aquí muestro la variabilidad intrínseca de la estimación subyacente de voto para cada partido, tanto
+antes como después de las elecciones. Es lógico que UP y Cs tengan una variabilidad mayor por su largo crecimiento en el último año,
+aunque se estabiliza después de las elecciones.</p>
+<img src="variabilidad.png">
+
+<h3>
+<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sesgos a un mes</h3>
+<p>Aunque las estimaciones son ruidosas, represento a continuación la diferencia entre el valor
+de un sondeo para cada empresa con respecto al valor del valor subyacente (corregido por el sesgo medio) actual o a un mes en el futuro. Esto
+puede servir para predecir qué empresas de sondeo tienden a predecir el valor promedio o cuales
+son capaces de adelantarse (o sesgar a los encuestados, porque puede verse de las dos formas)
+a los resultados del futuro. Hay que notar que la columna de la izquierda debería estar aproximadamente
+distribuido de forma normal centrada en 0 y con varianza dependiendo del tamaño de sondeo de cada
+empresa.</p>
+<img src="biasOneMonth.png">
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/aasensio/elecciones2015">Elecciones 2016</a> is maintained by <a href="https://github.com/aasensio">aasensio</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
